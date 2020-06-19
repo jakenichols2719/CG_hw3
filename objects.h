@@ -33,7 +33,7 @@ protected:
   //texture
   float tex_sca = 1.0;
   bool hasTexture = false;
-  unsigned int texture;
+  GLuint texture;
 public:
   //constructors
   TObject();
@@ -102,6 +102,9 @@ public:
 
 /*
  * Circle
+ * Textures are placed in a circular pattern, with
+ * the top being placed in the middle and the bottom
+ * being the outside ring.
 */
 class Circle : public TObject
 {
@@ -115,6 +118,9 @@ public:
   void draw();
 };
 
+/*
+ * Sphere
+*/
 class Sphere : public TObject
 {
   using TObject::TObject;
@@ -123,4 +129,24 @@ private:
   float shine_value = 1;
   float spec_color[4] = {1,1,1,1};
   float em_color[4]   = {0,0,0,1};
+};
+
+//===FABRICATED OBJECTS===
+/*
+ * Target Face
+ * 1x1 circular face, .4 deep in y direction by default
+ * Texture applies to area between targets
+*/
+class TargetFace : public TObject
+{
+  using TObject::TObject;
+private:
+  Circle front = Circle(0,0,0, 1,1,1, 0,.2,0, 1,1,1, (char*)"target.bmp");
+  Circle back = Circle(180,0,0, 1,1,1, 0,-.2,0, 1,1,1, (char*)"target.bmp");
+  float shine_value = 1;
+  float spec_color[4] = {1,1,1,1};
+  float em_color[4]   = {0,0,0,1};
+public:
+  void init();
+  void draw();
 };

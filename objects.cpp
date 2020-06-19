@@ -67,7 +67,9 @@ void TObject::draw()
 //===CUBOID===
 void Cuboid::init()
 {
-  //cuboid doesn't need initialization right now
+  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
 }
 void Cuboid::draw()
 {
@@ -75,9 +77,6 @@ void Cuboid::draw()
   apply_transform();
   //draw with texture
   if(hasTexture) {
-    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
@@ -127,9 +126,6 @@ void Cuboid::draw()
   }
   //draw without texture
   else {
-    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
-    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
     glBegin(GL_QUADS);
       glColor3f(col[0],col[1],col[2]);
       glNormal3f( 0, 0, .5);
@@ -197,6 +193,7 @@ void SurfaceRect::draw()
     glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
     //draw
     glBegin(GL_QUADS);
+      glNormal3f(0,1,0);
       glTexCoord2f(0.0,    0.0); glVertex3f(-.5,0,.5);
       glTexCoord2f(tex_sca,0.0); glVertex3f(.5,0,.5);
       glTexCoord2f(tex_sca,tex_sca); glVertex3f(.5,0,-.5);
@@ -212,6 +209,7 @@ void SurfaceRect::draw()
     glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
     //draw
     glBegin(GL_QUADS);
+      glNormal3f(0,1,0);
       glVertex3f(-.5,0,.5);
       glVertex3f(.5,0,.5);
       glVertex3f(.5,0,-.5);
@@ -245,10 +243,11 @@ void Circle::draw()
     //draw
     glEnable(GL_TEXTURE_2D);
     glBegin(GL_QUADS);
-    for(int th = 0; th < 360; th+=10) {
+    for(int th = 0; th < 360; th+=20) {
+      glNormal3f(0,1,0);
       glTexCoord2f(0,1); glVertex3f(0,0,0);
-      glTexCoord2f(0,0); glVertex3f(-Sin(th+5),0,Cos(th+5));
-      glTexCoord2f(1,0); glVertex3f(-Sin(th-5),0,Cos(th-5));
+      glTexCoord2f(0,0); glVertex3f(-Sin(th+10),0,Cos(th+10));
+      glTexCoord2f(1,0); glVertex3f(-Sin(th-10),0,Cos(th-10));
       glTexCoord2f(1,1); glVertex3f(0,0,0);
     }
     glEnd();
@@ -263,6 +262,7 @@ void Circle::draw()
     //draw
     glBegin(GL_QUADS);
     for(int th = 0; th < 360; th+=10) {
+      glNormal3f(0,1,0);
       glVertex3f(0,0,0);
       glVertex3f(-Sin(th+5),0,Cos(th+5));
       glVertex3f(-Sin(th-5),0,Cos(th-5));
@@ -274,3 +274,41 @@ void Circle::draw()
 }
 
 //===SPHERE===
+//===TARGETFACE===
+void TargetFace::init()
+{
+  glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
+}
+void TargetFace::draw()
+{
+  glPushMatrix();
+  apply_transform();
+  //draw target faces
+  front.draw();
+  back.draw();
+  glPopMatrix();
+  //need to reset so that texture gets applied
+  glPushMatrix();
+  apply_transform();
+  //draw wooden frame
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                  GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_NEAREST);
+  glEnable(GL_TEXTURE_2D);
+  glBegin(GL_QUADS);
+    for(int th = 0; th < 360; th+=20) {
+      glNormal3f(-Sin(th),0,Cos(th));
+      glTexCoord2f(0,1); glVertex3f(-Sin(th+10),-.2,Cos(th+10));
+      glTexCoord2f(0,0); glVertex3f(-Sin(th-10),-.2,Cos(th-10));
+      glTexCoord2f(1,0); glVertex3f(-Sin(th-10),+.2,Cos(th-10));
+      glTexCoord2f(1,1); glVertex3f(-Sin(th+10),+.2,Cos(th+10));
+    }
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
