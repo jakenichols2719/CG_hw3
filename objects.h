@@ -25,10 +25,12 @@
 class TObject
 {
 protected:
+  //transform
   float sca[3] = {1,1,1};
   float rot[3] = {0,0,0};
   float pos[3] = {0,0,0};
   float col[3] = {1,1,1};
+  //texture
   float tex_sca = 1.0;
   bool hasTexture = false;
   unsigned int texture;
@@ -65,7 +67,43 @@ public:
   virtual void draw();
 };
 
+
+/*
+ * Cuboid
+ * 1x1x1 cube centered on (0,0,0)
+*/
 class Cuboid : public TObject
+{
+  using TObject::TObject;
+private:
+  float shine_value = 1;
+  float spec_color[4] = {1,1,1,1};
+  float em_color[4]   = {0,0,0,1};
+public:
+  void init();
+  void draw();
+};
+
+/*
+ * Surface rectangle (flat)
+ * 1x1 plane, centered on (0,0,0), facing up
+*/
+class SurfaceRect : public TObject
+{
+  using TObject::TObject;
+private:
+  float shine_value = 1;
+  float spec_color[4] = {1,1,1,1};
+  float em_color[4]   = {0,0,0,1};
+public:
+  void init();
+  void draw();
+};
+
+/*
+ * Circle
+*/
+class Circle : public TObject
 {
   using TObject::TObject;
 private:

@@ -22,7 +22,7 @@ float ylight  =   0;  // Elevation of light
 
 //timing variables
 float lastTime;
-static int targetFPS = 60;
+static int targetFPS = 120;
 
 //key variables
 bool key_buffer[8]; //up, left, down, right, w, a, s, d
@@ -67,7 +67,8 @@ void runLighting()
   float Diffuse[]   = {(float)0.01*diffuse ,(float)0.01*diffuse ,(float)0.01*diffuse ,1.0};
   float Specular[]  = {(float)0.01*specular,(float)0.01*specular,(float)0.01*specular,1.0};
   //  Light position
-  float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
+  //float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
+  float Position[] = {-5,3,5};
   //illustrate light
   glPointSize(10);
   glColor3f(1,1,0);
@@ -106,6 +107,7 @@ void display()
   runLighting();
   objects[0]->draw();
   objects[1]->draw();
+  objects[2]->draw();
   glPopMatrix();
   glPointSize(10);
   glColor3f(1,0,0);
@@ -178,7 +180,8 @@ void specialUp(int key, int x, int y)
 void program_init()
 {
   objects[0] = new Cuboid(0,0,0, 1,1,1, 0,0,0, 1,1,1, (char*)"crate.bmp"); objects[0]->init();
-  objects[1] = new Cuboid(0,0,0, .5,.5,.5, 1,0,0, 1,1,1); objects[1]->init();
+  objects[1] = new Cuboid(0,0,0, .5,.5,.5, 1,0,0, 1,1,1, (char*)"darkwood.bmp"); objects[1]->init();
+  objects[2] = new Circle(90,0,0, 1,1,1, 0,0,-3, 1,1,1, (char*)"target.bmp"); objects[2]->init();
 }
 
 int main(int argc, char* argv[])
@@ -197,7 +200,7 @@ int main(int argc, char* argv[])
   //face culling/depth test
   glEnable(GL_DEPTH_TEST);
   glCullFace(GL_BACK);
-  //glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   //lighting
   glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
   glEnable(GL_COLOR_MATERIAL);

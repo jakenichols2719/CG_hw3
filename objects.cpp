@@ -127,51 +127,147 @@ void Cuboid::draw()
   }
   //draw without texture
   else {
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
     glBegin(GL_QUADS);
-      glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
-      glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
-      glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
-      glColor3f(1,0,0);
+      glColor3f(col[0],col[1],col[2]);
       glNormal3f( 0, 0, .5);
       glVertex3f(-.5,-.5, .5);
       glVertex3f(+.5,-.5, .5);
       glVertex3f(+.5,+.5, .5);
       glVertex3f(-.5,+.5, .5);
       //  Back
-      glColor3f(0,0,1);
       glNormal3f( 0, 0,-.5);
       glVertex3f(+.5,-.5,-.5);
       glVertex3f(-.5,-.5,-.5);
       glVertex3f(-.5,+.5,-.5);
       glVertex3f(+.5,+.5,-.5);
       //  Right
-      glColor3f(1,1,0);
       glNormal3f(+.5, 0, 0);
       glVertex3f(+.5,-.5,+.5);
       glVertex3f(+.5,-.5,-.5);
       glVertex3f(+.5,+.5,-.5);
       glVertex3f(+.5,+.5,+.5);
       //  Left
-      glColor3f(0,1,0);
       glNormal3f(-.5, 0, 0);
       glVertex3f(-.5,-.5,-.5);
       glVertex3f(-.5,-.5,+.5);
       glVertex3f(-.5,+.5,+.5);
       glVertex3f(-.5,+.5,-.5);
       //  Top
-      glColor3f(0,1,1);
       glNormal3f( 0,+.5, 0);
       glVertex3f(-.5,+.5,+.5);
       glVertex3f(+.5,+.5,+.5);
       glVertex3f(+.5,+.5,-.5);
       glVertex3f(-.5,+.5,-.5);
       //  Bottom
-      glColor3f(1,0,1);
       glNormal3f( 0,-.5, 0);
       glVertex3f(-.5,-.5,-.5);
       glVertex3f(+.5,-.5,-.5);
       glVertex3f(+.5,-.5,+.5);
       glVertex3f(-.5,-.5,+.5);
+    glEnd();
+  }
+  glPopMatrix();
+}
+
+//===RECTANGLE===
+void SurfaceRect::init()
+{
+
+}
+void SurfaceRect::draw()
+{
+  glPushMatrix();
+  apply_transform();
+  //draw with texture
+  if(hasTexture) {
+    //enable textures
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                    GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_NEAREST);
+    glEnable(GL_TEXTURE_2D);
+    //enable lighting materials
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
+    //draw
+    glBegin(GL_QUADS);
+      glTexCoord2f(0.0,    0.0); glVertex3f(-.5,0,.5);
+      glTexCoord2f(tex_sca,0.0); glVertex3f(.5,0,.5);
+      glTexCoord2f(tex_sca,tex_sca); glVertex3f(.5,0,-.5);
+      glTexCoord2f(0.0,    tex_sca); glVertex3f(-.5,0,-.5);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+  }
+  //draw without texture
+  else {
+    //enable lighting materials
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
+    //draw
+    glBegin(GL_QUADS);
+      glVertex3f(-.5,0,.5);
+      glVertex3f(.5,0,.5);
+      glVertex3f(.5,0,-.5);
+      glVertex3f(-.5,0,-.5);
+    glEnd();
+  }
+  glPopMatrix();
+}
+
+//===CIRCLE===
+void Circle::init()
+{
+
+}
+void Circle::draw()
+{
+  glPushMatrix();
+  apply_transform();
+  if(hasTexture) {
+    //enable lighting materials
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                    GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_NEAREST);
+    glColor3f(col[0], col[1], col[2]);
+    //draw
+    glEnable(GL_TEXTURE_2D);
+    glBegin(GL_QUADS);
+    for(int th = 0; th < 360; th+=10) {
+      glTexCoord2f(0,1); glVertex3f(0,0,0);
+      glTexCoord2f(0,0); glVertex3f(-Sin(th+5),0,Cos(th+5));
+      glTexCoord2f(1,0); glVertex3f(-Sin(th-5),0,Cos(th-5));
+      glTexCoord2f(1,1); glVertex3f(0,0,0);
+    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+  }
+  else {
+    //enable lighting materials
+    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shine_value);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,spec_color);
+    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,em_color);
+    glColor3f(col[0], col[1], col[2]);
+    //draw
+    glBegin(GL_QUADS);
+    for(int th = 0; th < 360; th+=10) {
+      glVertex3f(0,0,0);
+      glVertex3f(-Sin(th+5),0,Cos(th+5));
+      glVertex3f(-Sin(th-5),0,Cos(th-5));
+      glVertex3f(0,0,0);
+    }
     glEnd();
   }
   glPopMatrix();
