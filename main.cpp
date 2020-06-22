@@ -57,8 +57,8 @@ void process_keys(float delta)
     th += 100 * delta;
   }
   //wrap rotation variables
-  if(ph > 360) ph = 0;
-  if(ph < 0) ph = 360;
+  if(ph > 89) ph = 89;
+  if(ph < -89) ph = -89;
   if(th > 360) th = 0;
   if(th < 0) th = 360;
 }
