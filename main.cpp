@@ -1,23 +1,25 @@
 #include "objects.h"
 
-TObject* objects[3];
-float th = 15;
-float ph = 45;
+TObject* objects[15];
+float th = 0;
+float ph = 0;
+float look[3] = {0,0,-1}; //look vector
 
 //lighting variables (copied from ex13 for now)
 int light     =   1;  // Lighting
 int one       =   1;  // Unit value
-int distance  =   5;  // Light distance
+int distance  =   15;  // Light distance
 int inc       =  10;  // Ball increment
 int smooth    =   1;  // Smooth/Flat shading
 int local     =   0;  // Local Viewer Model
 int emission  =   0;  // Emission intensity (%)
-float ambient   =  40;  // Ambient intensity (%)
-float diffuse   =  50;  // Diffuse intensity (%)
-float specular  =  10;  // Specular intensity (%)
+float ambient   =  50;  // Ambient intensity (%)
+float diffuse   =  80;  // Diffuse intensity (%)
+float specular  =  20;  // Specular intensity (%)
+float atn[3] = {1,.12,0};
 int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
-int zh        =  90;  // Light azimuth
+int zh        =  90;  // Light angle
 float ylight  =   0;  // Elevation of light
 
 //timing variables
@@ -25,7 +27,8 @@ float lastTime;
 static int targetFPS = 144;
 
 //key variables
-bool key_buffer[8]; //up, left, down, right, w, a, s, d
+bool key_buffer[4]; //up, left, down, right
+bool rotate_light = true;
 
 //returns delta, locking to FPS when able.
 static float delta_()
@@ -42,16 +45,16 @@ static float delta_()
 void process_keys(float delta)
 {
   if(key_buffer[0]) {
-    ph += 100 * delta;
-  }
-  if(key_buffer[1]) {
-    th += 100 * delta;
-  }
-  if(key_buffer[2]) {
     ph -= 100 * delta;
   }
-  if(key_buffer[3]) {
+  if(key_buffer[1]) {
     th -= 100 * delta;
+  }
+  if(key_buffer[2]) {
+    ph += 100 * delta;
+  }
+  if(key_buffer[3]) {
+    th += 100 * delta;
   }
   //wrap rotation variables
   if(ph > 360) ph = 0;
@@ -67,8 +70,9 @@ void runLighting()
   float Diffuse[]   = {(float)0.01*diffuse ,(float)0.01*diffuse ,(float)0.01*diffuse ,1.0};
   float Specular[]  = {(float)0.01*specular,(float)0.01*specular,(float)0.01*specular,1.0};
   //  Light position
-  float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
-  //float Position[] = {-5,3,5};
+  //float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
+  //float Position[] = {2,0,2};
+  float Position[] = {2*Sin(zh),1,4*Cos(zh)};
   //illustrate light
   glPointSize(10);
   glColor3f(1,1,0);
@@ -80,6 +84,9 @@ void runLighting()
   glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
   glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
   glLightfv(GL_LIGHT0,GL_POSITION,Position);
+  glLightf(GL_LIGHT0,GL_CONSTANT_ATTENUATION, atn[0]);
+  glLightf(GL_LIGHT0,GL_LINEAR_ATTENUATION, atn[1]);
+  glLightf(GL_LIGHT0,GL_QUADRATIC_ATTENUATION, atn[2]);
 }
 
 //glut idle func
@@ -88,32 +95,42 @@ void idle()
   float delta = delta_();
   if(delta) {
     process_keys(delta);
-    zh += 90.0*delta;
-    zh %= 360;
+    if(rotate_light){
+      zh += 90.0*delta;
+      zh %= 360;
+    }
   }
    glutPostRedisplay();
 }
 
+void transform_camera()
+{
+  look[0] = Sin(th)*Cos(ph);
+  look[1] = -Sin(ph);
+  look[2] = -Cos(th)*Cos(ph);
+  gluLookAt(0,0,4, look[0],look[1],look[2]+4, 0,1,0);
+  glPointSize(10);
+  glColor3f(1,0,0);
+  glBegin(GL_POINTS);
+  glVertex3f(look[0],look[1],look[2]+4);
+  glEnd();
+
+}
 //glut display func
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
-  //transformCamera();
-  gluLookAt(0,0,5, 0,0,0, 0,1,0);
+  transform_camera();
+  //gluLookAt(0,0,5, 0,0,0, 0,1,0);
   glPushMatrix();
-  glRotated(ph,1,0,0);
-  glRotated(th,0,1,0);
+  //glRotated(ph,1,0,0);
+  //glRotated(th,0,1,0);
   runLighting();
-  objects[0]->draw();
-  //objects[1]->draw();
-  //objects[2]->draw();
+  for(int n=0; n<12; n++) {
+    objects[n]->draw();
+  }
   glPopMatrix();
-  glPointSize(10);
-  glColor3f(1,0,0);
-  glBegin(GL_POINTS);
-  glVertex3f(0,0,0);
-  glEnd();
   glutSwapBuffers();
 }
 
@@ -177,12 +194,37 @@ void specialUp(int key, int x, int y)
   }
 }
 
+void keyboard(unsigned char key, int x, int y)
+{
+  switch(key) {
+    case 's':
+      rotate_light = !rotate_light;
+      break;
+    case 27:
+      exit(0);
+  }
+}
+
 void program_init()
 {
-  //objects[0] = new Cuboid(0,0,0, 1,1,1, 0,0,0, 1,1,1, (char*)"crate.bmp"); objects[0]->init();
-  objects[0] = new TargetFace(90,0,0, 1,1,1, 0,0,0, 1,1,1, (char*)"darkwood.bmp"); objects[0]->init();
-  //objects[1] = new Cuboid(0,0,0, .5,.5,.5, 1,0,0, 1,1,1, (char*)"darkwood.bmp"); objects[1]->init();
-  //objects[2] = new Circle(90,0,0, 2,1,1, 0,0,-3, 1,1,1, (char*)"target.bmp"); objects[2]->init();
+  objects[0] = new TargetRack(0,0,0, 1,1,1, 0,0,-10); objects[0]->init();
+  objects[0]->toggle_light_at(1,1);
+  objects[1] = new SurfaceRect(0,0,0, 10,1,25, 0,-3,-4, 1,1,1, (char*)"hay.bmp"); objects[1]->init();
+  objects[1]->set_texture_scale(5);
+  objects[2] = new SurfaceRect(0,0,-90, 10,1,25, -5,2,-4, 1,1,1, (char*)"darkwood.bmp"); objects[2]->init();
+  objects[2]->set_texture_scale(5);
+  objects[3] = new SurfaceRect(0,0,90, 10,1,25, 5,2,-4, 1,1,1, (char*)"darkwood.bmp"); objects[3]->init();
+  objects[3]->set_texture_scale(5);
+  objects[4] = new SurfaceRect(0,0,180, 10,1,25, 0,6,-4, 1,1,1, (char*)"darkwood.bmp"); objects[4]->init();
+  objects[4]->set_texture_scale(5);
+  objects[5] = new SurfaceRect(90,0,0, 10,1,10, 0,1,-16, 1,1,1, (char*)"darkwood.bmp"); objects[5]->init();
+  objects[5]->set_texture_scale(5);
+  objects[6] = new Cuboid(0,20,0, 2,2,2, -3.5,-2,-14, 1,1,1, (char*)"crate.bmp"); objects[6]->init();
+  objects[7] = new Cuboid(0,30,0, 1,1,1, -3.5,-.5,-14, 1,1,1, (char*)"crate.bmp"); objects[7]->init();
+  objects[8] = new Cuboid(0,30,0, 2,2,2,  3.5,-2,0, 1,1,1, (char*)"crate.bmp"); objects[8]->init();
+  objects[9] = new Cuboid(0,-10,0, 1.6,1.6,1.6,  1.0,-2.2,.2, 1,1,1, (char*)"crate.bmp"); objects[9]->init();
+  objects[10] = new Cuboid(0,45,0, 1.4,1.4,1.4,  -.7,-2.2,-.1, 1,1,1, (char*)"crate.bmp"); objects[10]->init();
+  objects[11] = new Cuboid(0,10,0, 1.9,1.9,1.9,  -3,-2,-.1, 1,1,1, (char*)"crate.bmp"); objects[11]->init();
 }
 
 int main(int argc, char* argv[])
@@ -197,7 +239,7 @@ int main(int argc, char* argv[])
   glutReshapeFunc(reshape); //reshape function
   glutSpecialFunc(special); //arrow keys, esc
   glutSpecialUpFunc(specialUp);
-  //glutKeyboardFunc(keyboard); //keyboard controls
+  glutKeyboardFunc(keyboard); //keyboard controls
   //face culling/depth test
   glEnable(GL_DEPTH_TEST);
   glCullFace(GL_BACK);

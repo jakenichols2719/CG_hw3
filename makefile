@@ -32,7 +32,7 @@ errcheck.o: errcheck.c CSCIx229.h
 CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o
 	ar -rcs $@ $^
 
-main.o: main.cpp
+main.o: main.cpp objects.o
 objects.o: CSCIx229.a objects.h objects.cpp
 
 .c.o:

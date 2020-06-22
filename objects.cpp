@@ -45,11 +45,12 @@ int TObject::apply_transform()
   //translate
   glTranslatef(pos[0], pos[1], pos[2]);
   //scale
-  glScalef(sca[0],sca[1],sca[2]);
+  //glScalef(sca[0],sca[1],sca[2]);
   //rotate
   glRotatef(rot[2],0,0,1);
   glRotatef(rot[1],0,1,0);
   glRotatef(rot[0],1,0,0);
+    glScalef(sca[0],sca[1],sca[2]);
   return 0;
 }
 
@@ -61,6 +62,15 @@ void TObject::init()
 void TObject::draw()
 {
   std::cout << "Didn't implement draw for this shape" << std::endl;
+}
+
+void TObject::toggle_light()
+{
+  std::cout << "toggle light not implemented for this object." << std::endl;
+}
+void TObject::toggle_light_at(int x, int y)
+{
+  std::cout << "toggle light at not implemented for this object." << std::endl;
 }
 
 
@@ -273,7 +283,6 @@ void Circle::draw()
   glPopMatrix();
 }
 
-//===SPHERE===
 //===TARGETFACE===
 void TargetFace::init()
 {
@@ -311,4 +320,68 @@ void TargetFace::draw()
   glEnd();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
+}
+void TargetFace::toggle_light()
+{
+  lit = !lit;
+  if(lit) front.set_texture((char*)"target_lit.bmp");
+  if(!lit) front.set_texture((char*)"target.bmp");
+}
+
+//===FULLTARGET
+void FullTarget::init()
+{
+
+}
+void FullTarget::draw()
+{
+  glPushMatrix();
+  apply_transform();
+  targ.draw();
+  prop1.draw();
+  prop2.draw();
+  prop3.draw();
+  glPopMatrix();
+}
+void FullTarget::toggle_light()
+{
+  targ.toggle_light();
+}
+
+//===TARGETRACK===
+void TargetRack::init()
+{
+  for(int y=0; y<4; y++) {
+    float height = 3.3 - 2*y;
+    shelves[y] = Cuboid(0,0,0, 6,.2,.5, 0,height,0, 1,1,1, (char*)"medwood.bmp");
+    for(int x=0; x<4; x++) {
+      float posx = -2.25 + 1.5*x;
+      float posy = 4 - 2*y;
+      targets[x + y*4] = FullTarget(0,0,0, .75,.75,1, posx,posy,0, 1,1,1, (char*)"darkwood.bmp");
+    }
+  }
+  leftside.init();
+  rightside.init();
+  topside.init();
+}
+
+void TargetRack::draw()
+{
+  glPushMatrix();
+  apply_transform();
+  for(int n=0; n<4; n++) {
+    shelves[n].draw();
+  }
+  for(int n=0; n<16; n++) {
+    targets[n].draw();
+  }
+  leftside.draw();
+  rightside.draw();
+  topside.draw();
+  glPopMatrix();
+}
+
+void TargetRack::toggle_light_at(int x, int y)
+{
+  targets[x+y*4].toggle_light();
 }
